@@ -1,0 +1,62 @@
+[project]
+name = "defuddle-py"
+version = "0.1.0"
+description = "Python port of the Defuddle main-content extraction algorithm"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.14,<5",
+    "html5lib>=1.1,<2",
+    "markdown-it-py>=3,<5",
+    "markdownify>=1.2,<2",
+]
+
+[project.scripts]
+defuddle-py = "defuddle_py.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "pip-audit>=2.7",
+    "pytest>=8",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/defuddle_py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "S", "BLE", "DTZ", "ASYNC", "T20", "LOG", "G", "RUF", "PTH", "SIM", "C4", "I", "UP"]
+# Typographic characters are data here: the pipeline normalizes them.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+"scripts/*" = ["T20"]
+"src/defuddle_py/constants.py" = ["E501"]
+"src/defuddle_py/cli.py" = ["T20"]
+
+[tool.mypy]
+strict = true
+python_version = "3.11"
+files = ["src", "tests", "scripts"]
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["html5lib.*", "markdownify.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
