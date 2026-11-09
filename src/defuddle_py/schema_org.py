@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 from defuddle_py import dom
 from defuddle_py.limits import Limits
+from defuddle_py.text import replace_lone_surrogates
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +50,11 @@ def _depth_within(value: JsonValue, max_depth: int) -> bool:
 
 def _decode_strings(value: JsonValue) -> JsonValue:
     if isinstance(value, str):
-        return html.unescape(value)
+        return replace_lone_surrogates(html.unescape(value))
     if isinstance(value, list):
         return [_decode_strings(item) for item in value]
     if isinstance(value, dict):
-        return {key: _decode_strings(item) for key, item in value.items()}
+        return {replace_lone_surrogates(key): _decode_strings(item) for key, item in value.items()}
     return value
 
 

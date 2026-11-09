@@ -1,5 +1,6 @@
 """Text helpers ported from ``src/utils.ts`` of Defuddle."""
 
+import re
 from typing import Final
 
 from defuddle_py.limits import MAX_PATTERN_TEXT_CHARS
@@ -13,6 +14,10 @@ _CJK_RANGES: Final = (
     (0xAC00, 0xD7AF),
 )
 _MAX_CONTROL_CODE: Final = 32
+# A str can hold surrogate code points that no UTF-8 encoder accepts. Python only
+# produces them from broken input, so every one found here is unpaired.
+_LONE_SURROGATE: Final = re.compile("[\ud800-\udfff]")
+_REPLACEMENT_CHARACTER: Final = "\ufffd"
 _NORMALIZE_TABLE: Final = str.maketrans(
     {
         " ": " ",
@@ -67,3 +72,8 @@ def normalize_text(text: str) -> str:
 def bounded(text: str) -> str:
     """Return a prefix of ``text`` that is safe to give to a backtracking regex."""
     return text[:MAX_PATTERN_TEXT_CHARS]
+
+
+def replace_lone_surrogates(text: str) -> str:
+    """Replace unpaired surrogates with U+FFFD so the text stays encodable."""
+    return _LONE_SURROGATE.sub(_REPLACEMENT_CHARACTER, text)

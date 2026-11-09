@@ -294,3 +294,28 @@ def test_package_imports_no_execution_or_network_modules() -> None:
             elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
                 assert node.func.id not in ("eval", "exec", "compile"), path
             assert not forbidden.intersection(names), path
+
+
+_LONE_SURROGATE = "\ud800"
+_JSON_LD_SURROGATE = (
+    '<script type="application/ld+json">'
+    '{"articleBody": "one two three four five six seven eight \\ud800",'
+    ' "\\udc00key": "v"}</script><p>hi</p>'
+)
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        _LONE_SURROGATE,
+        f"<p>a{_LONE_SURROGATE}b</p>",
+        _JSON_LD_SURROGATE,
+        _JSON_LD_SURROGATE.encode(),
+    ],
+)
+def test_lone_surrogates_become_replacement_characters(html: str | bytes) -> None:
+    result = parse(html)
+    texts = [result.content, result.content_markdown, repr(result.schema_org_data)]
+    for text in texts:
+        text.encode("utf-8")
+    assert all(_LONE_SURROGATE not in text for text in texts)

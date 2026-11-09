@@ -17,6 +17,7 @@ from defuddle_py.limits import Limits
 from defuddle_py.markdown import to_markdown
 from defuddle_py.metadata import MetaTag
 from defuddle_py.schema_org import JsonValue
+from defuddle_py.text import replace_lone_surrogates
 
 __all__ = [
     "DefuddleError",
@@ -55,7 +56,7 @@ def _to_text(html: str | bytes, limits: Limits, encoding: str | None) -> str:
     size = len(html) if isinstance(html, bytes) else len(html.encode("utf-8", "replace"))
     if size > limits.max_input_bytes:
         raise InputTooLargeError(f"input is {size} bytes, limit is {limits.max_input_bytes}")
-    return decode_html(html, encoding) if isinstance(html, bytes) else html
+    return decode_html(html, encoding) if isinstance(html, bytes) else replace_lone_surrogates(html)
 
 
 def parse(
