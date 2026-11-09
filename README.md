@@ -57,9 +57,12 @@ Input is treated as hostile.
 - The Markdown is parsed again before it is returned. If it holds raw HTML or a dangerous link,
   it is converted again with code as plain text, and dropped if that also fails. This check uses
   one parser, so it cannot rule out a renderer that reads Markdown differently.
-- Fenced code keeps its text, including `<`. A renderer without fenced code support reads that text
-  as Markdown. Sanitize the rendered HTML of untrusted pages. Turning raw HTML off is not enough:
-  extensions can add attributes or other active output that this package cannot predict.
+- Code blocks are written as backtick fences, as in Defuddle, and keep their text, including `<`.
+  A renderer that does not read a fence as code reads its text as Markdown, so links such as
+  `javascript:` URLs and raw HTML inside the code become active. Python-Markdown does this without
+  the `fenced_code` extension, and with it (or `extra`) for fences inside lists and block quotes.
+  Sanitize the rendered HTML of untrusted pages, for example with `nh3`. Turning raw HTML off is
+  not enough: links and extension syntax still pass.
 - Tests reparse the HTML and render the Markdown, then check that nothing active survives. The
   attack tests run with the check above turned off, so they test the conversion itself.
 - `title`, `description`, `image`, `favicon` and other metadata are page text. Escape and validate
